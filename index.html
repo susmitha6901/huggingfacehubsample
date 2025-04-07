@@ -62,10 +62,17 @@
       answerContainer.innerHTML = "Loading...";
 
       try {
-        const res = await fetch("http://localhost:8000/ask-pdf/", {
+
+        const backendURL = "https://huggingfacehubsample.onrender.com";  // replace with your backend URL
+        const res = await fetch(`${backendURL}/ask-pdf/`, {
           method: "POST",
           body: formData
         });
+
+        // const res = await fetch("http://localhost:8000/ask-pdf/", {
+        //   method: "POST",
+        //   body: formData
+        // });
 
         const data = await res.json();
 
