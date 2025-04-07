@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="stylesheet" href="style.css">
+  <title>PDF QA App</title>
+  <style>
+    body { font-family: Arial; margin: 40px; }
+    h2 { margin-bottom: 10px; }
+    input, textarea, button { margin: 10px 0; width: 100%; padding: 8px; }
+    #history { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 20px; }
+    .entry { margin-bottom: 15px; padding: 10px; background: #f9f9f9; border-radius: 6px; }
+    .entry strong { display: block; }
+  </style>
+</head>
+<body>
+
+  <h2>Ask Your PDFs</h2>
+  <h5>In API Section Enter Your 😊HuggingFaceHub API</h5>
+  <form id="queryForm">
+    <label>Select PDF files:</label>
+    <input type="file" id="pdfs" name="files" accept="application/pdf" multiple required>
+
+    <!-- <label>Your Query:</label>
+    <textarea id="question" name="question" rows="3" required></textarea> -->
+
+    <label>LLM API Key:</label>
+    <input type="text" id="api_key" name="api_key" required>
+
+    <label>Your Query:</label>
+    <textarea id="question" name="question" rows="3" required></textarea>
+
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="answerContainer"></div>
+
+  <div id="history">
+    <h3>Query History</h3>
+    <div id="historyEntries"></div>
+  </div>
+
+  <script>
+    const form = document.getElementById('queryForm');
+    const answerContainer = document.getElementById('answerContainer');
+    const historyEntries = document.getElementById('historyEntries');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const formData = new FormData();
+      const files = document.getElementById('pdfs').files;
+      const question = document.getElementById('question').value;
+      const apiKey = document.getElementById('api_key').value;
+
+      for (let i = 0; i < files.length; i++) {
+        formData.append("files", files[i]);
+      }
+      formData.append("question", question);
+      formData.append("api_key", apiKey);
+
+      answerContainer.innerHTML = "Loading...";
+
+      try {
+        const res = await fetch("http://localhost:8000/ask-pdf/", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          answerContainer.innerHTML = `<p><strong>Answer:</strong> ${data.answer}</p>`;
+          updateHistory(question, data.answer);
+        } else {
+          answerContainer.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
+        }
+      } catch (error) {
+        answerContainer.innerHTML = `<p style="color:red;">Error: ${error.message}</p>`;
+      }
+    });
+
+    function updateHistory(question, answer) {
+      const div = document.createElement('div');
+      div.className = 'entry';
+      div.innerHTML = `<strong>Q:</strong> ${question}<br><strong>A:</strong> ${answer}`;
+      historyEntries.prepend(div);
+    }
+  </script>
+
+</body>
+</html>
